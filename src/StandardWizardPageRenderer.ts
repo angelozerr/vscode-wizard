@@ -70,6 +70,8 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
         return this.selectAsHTML(field, data);
       case "combo":
         return this.comboAsHTML(field, data);
+        case "file-picker":
+          return this.filePickerAsHTML(field, data);        
       default:
         return "";
     }
@@ -254,6 +256,29 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
        </datalist>`;
 
     return this.wrapHTMLField(field, htmlcombo);
+  }
+
+  filePickerAsHTML(field: WizardPageFieldDefinition, data: any): string {
+    const id = field.id;
+    const value = this.getInitialValue(field, data);
+    const disabled = !this.isFieldEnabled(field, data);
+    const placeholder = this.getFieldPlaceHolder(field);
+
+    const htmlInput =
+      `<input id="${id}"
+              name="${id}"
+              type="text"
+              ${value ? `value="${value}"` : ""}
+              ${disabled ? "disabled" : ""}
+              ${placeholder ? `placeholder="${placeholder}"` : ""}
+              oninput="fieldChanged(this)"
+              data-setting data-setting-preview >
+       <button type="button"
+               class="btn btn-secondary"
+               id="buttonNext"
+               onclick="openFileDialog('${id}')">Browse...</button>`;
+
+    return this.wrapHTMLField(field, htmlInput);
   }
 
   validationDiv(id: string): string {
