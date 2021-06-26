@@ -11,4 +11,6 @@ export interface IWizardPage {
     isPageComplete(): boolean;
     setPreviousPage(page: IWizardPage): void;
     setWizard(wizard: IWizard): void;
+    setFieldFocus(fieldId : string): void;
+    getFieldFocus(): string | undefined;
   }

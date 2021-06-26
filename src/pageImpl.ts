@@ -25,14 +25,28 @@ export interface HandlerResponse {
 }
 
 interface Content {
-  id: string;
-  body: string;
+  id: string; // div ID to replace
+  body: string; // HTML content
 }
 
 interface CommandResponse {
   command: string;
   contents?: Content[];
   result?: any;
+  fieldFocus?: string;
+}
+
+class InitializeDataCommandResponse implements CommandResponse {
+  command: string = 'InitializeData';
+
+  constructor(private obj: any) {
+
+  }
+
+  public get result() : string {
+    return this.obj;
+  }
+
 }
 
 export const currentPanels: Map<string, vscode.WebviewPanel> = new Map();
@@ -41,13 +55,10 @@ export const currentPanels: Map<string, vscode.WebviewPanel> = new Map();
 export function sendInitialData(wizardName: string, data: Map<string, string>) {
   let panel = currentPanels.get(wizardName);
   if (panel) {
-    const response: CommandResponse = {
-      command: `InitializeData`,
-    };
-    let obj = Array.from(data).reduce((obj, [key, value]) => (
+    const obj = Array.from(data).reduce((obj, [key, value]) => (
       Object.assign(obj, { [key]: value }) // Be careful! Maps can have non-String keys; object literals can't.
     ), {});
-    response.result = obj;
+    const response = new InitializeDataCommandResponse(obj);
     panel.webview.postMessage(response);
   }
 }
@@ -179,6 +190,12 @@ function createDispatch(
           });
         } else {
           response.result = result;
+        }
+        if (result?.returnObject?.fieldFocus) {
+          const fieldFocus = result?.returnObject?.fieldFocus;
+          if (fieldFocus) {
+            response.fieldFocus = fieldFocus;
+          }
         }
         const panel: vscode.WebviewPanel | undefined = currentPanels.get(currentPanelName);
         if (panel && panel !== undefined) {

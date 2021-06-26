@@ -347,7 +347,7 @@ export class StandardWizardPageRenderer implements IWizardPageRenderer {
         const optionValue = optionLabelProvider && optionLabelProvider.getValueItem ? optionLabelProvider.getValueItem(option) : undefined;
         const optionLabel = optionLabelProvider ? optionLabelProvider.getLabelItem(option) : option;
         const selected: boolean = value ? (optionValue ? value === optionValue : value === optionLabel) : false;
-        return `<option${optionValue ? ` value="${optionValue}"` : ""}${selected ? " selected" : ""}>${optionLabel}</option>`;
+        return `<option${optionValue != undefined ? ` value="${optionValue}"` : ""}${selected ? " selected" : ""}>${optionLabel}</option>`;
       }).join("");
 
     return htmlOptions;

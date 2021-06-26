@@ -80,8 +80,9 @@ export class WebviewWizard extends Wizard implements IWizard {
     this.validateMapping = {
       command: "validate",
       handler: async (parameters: any) => {
-        if (!this.isDirty) {
-          this.isDirty = true;
+        const newDirty = parameters["___dirtyState"];
+        if (newDirty !== undefined && this.isDirty !== newDirty)  {
+          this.isDirty = newDirty;
           this.updateWizardPanelTitle(this.id, this.title, this.isDirty);
         }
 
@@ -136,7 +137,9 @@ export class WebviewWizard extends Wizard implements IWizard {
   backImpl(data: any): HandlerResponse {
     this.currentPage = this.getActualPreviousPage(data);
     return {
-      returnObject: {},
+      returnObject: {
+        fieldFocus : this.currentPage?.getFieldFocus()
+      },
       templates: this.getShowCurrentPageTemplates(data)
     };
   }
@@ -145,7 +148,9 @@ export class WebviewWizard extends Wizard implements IWizard {
     let nextPage: IWizardPage | null = this.getActualNextPage(data);
     this.currentPage = nextPage;
     return {
-      returnObject: {},
+      returnObject: {
+        fieldFocus : this.currentPage?.getFieldFocus()
+      },
       templates: this.getShowCurrentPageTemplates(data)
     };
   }
@@ -168,13 +173,12 @@ export class WebviewWizard extends Wizard implements IWizard {
       if (resp.success) {
         this.isDirty = false;
       }
-      let templatesToReturn = [];
-      for (let oneTemplate of resp.templates) {
+      const templatesToReturn = [];
+      for (const oneTemplate of resp.templates) {
         if (oneTemplate.id === UPDATE_TITLE && oneTemplate.content !== undefined) {
-          templatesToReturn.push({ id: 'wizardTitle', content: this.title });
-        } else {
-          templatesToReturn.push(oneTemplate);
+          this.title = oneTemplate.content;
         }
+        templatesToReturn.push(oneTemplate);
       }
 
       // Handle title changes
@@ -301,8 +305,8 @@ export class WebviewWizard extends Wizard implements IWizard {
     sendInitialData(this.id, new Map([...fieldsData, ...this.initialData]));
   }
   addPages(): void {
-    for (let d of this.definition.pages) {
-      let page: WebviewWizardPage = new WebviewWizardPage(d, this.definition);
+    for (const d of this.definition.pages) {
+      const page: WebviewWizardPage = new WebviewWizardPage(d, this.definition);
       page.setWizard(this);
       page.validate({});
       this.addPage(page);
